@@ -2,7 +2,7 @@ import socket
 import threading
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # Define tcp protocol for client
-client.connect(('127.0.0.1', 55556))  # Adress and port of chat server
+client.connect(('20.223.215.148', 55555))  # Adress and port of chat server
 
 nickname = input("Chose an nickname:")  # Ask client for nickname
 
