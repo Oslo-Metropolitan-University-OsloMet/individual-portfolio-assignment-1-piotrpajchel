@@ -1,8 +1,6 @@
 import socket
 import threading
 
-# 'ascii' to 'utf8'
-
 host = "127.0.0.1"  # Set server ip
 port = 55556  # Set server port
 
@@ -34,10 +32,30 @@ def handel(client):  # Function for handeling clients if client not available re
             break
 
 
+def set_keepalive(sock, after_idle_sec=1, interval_sec=3, max_fails=5):
+    """Set TCP keepalive on an open socket.
+
+    It activates after 1 second (after_idle_sec) of idleness,
+    then sends a keepalive ping once every 3 seconds (interval_sec),
+    and closes the connection after 5 failed ping (max_fails), or 15 seconds
+
+    https://www.programcreek.com/python/example/4925/socket.SO_KEEPALIVE example 17
+    """
+    if hasattr(socket, "SO_KEEPALIVE"):
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+    if hasattr(socket, "TCP_KEEPIDLE"):
+        sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPIDLE, after_idle_sec)
+    if hasattr(socket, "TCP_KEEPINTVL"):
+        sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, interval_sec)
+    if hasattr(socket, "TCP_KEEPCNT"):
+        sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPCNT, max_fails)
+
+
 def receive():
     while True:
         client, adress = server.accept()  # Looking for conection
         print(f'Conected with {str(adress)}')  # Server side system message
+        set_keepalive(client)  # Keep TCP konection alive to
 
         client.send('NICK'.encode('utf8'))  # Asking for nickname from client
         nickname = client.recv(1024).decode('utf8')  # Receive nickname and store nickname and client in lists
@@ -53,5 +71,12 @@ def receive():
         thread.start()
 
 
-print("Server started")
-receive()  # Main method start
+def main():
+    print("Server started")
+    receive()  # Main method start
+
+if __name__ == "__main__":
+    main()
+
+
+
