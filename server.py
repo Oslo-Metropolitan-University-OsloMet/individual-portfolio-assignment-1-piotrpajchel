@@ -16,6 +16,8 @@ def broadcast(message):  # Function for sending a message from one client to all
     for client in clients:
         client.send(message)
 
+        # if nick er i message ikke send den til avsender.
+
 
 def handel(client):  # Function for handeling clients if client not available remove client from server
     while True:
@@ -75,8 +77,6 @@ def main():
     print("Server started")
     receive()  # Main method start
 
+
 if __name__ == "__main__":
     main()
-
-
-
