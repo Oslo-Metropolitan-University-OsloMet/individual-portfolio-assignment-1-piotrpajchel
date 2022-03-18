@@ -1,7 +1,5 @@
 import socket
 import threading
-import time
-
 import Bot
 import sys
 import logging
@@ -43,6 +41,7 @@ args = my_parser.parse_args()
 # Check for valid ip format and set ip
 
 valid_ipaddress_regex = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$";
+
 ip_regexp = re.search(valid_ipaddress_regex, args.Ip)
 
 if ip_regexp:
@@ -50,6 +49,7 @@ if ip_regexp:
 else:
     logging.error("Not a valid ip format, valid format: [0-255].[0-255].[0-255].[0-255] ")
     sys.exit()
+
 
 # Sets port number
 port = args.Port
@@ -83,8 +83,9 @@ if args.Mode == 'user':
 
 # ---Net code-------------------
 
-client = socket.socket(socket.AF_INET, socket.SOCK_STREAM )  # Define tcp protocol for client
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # Define tcp protocol for client
 client.connect((address, port))  # Adress and port of chat server local '127.0.0.1', 55556
+
 
 # ---Bot code-------------------
 
@@ -100,12 +101,13 @@ def bot_io():  # Funktion for reciving messages form chat server
             else:
                 keyword = Bot.find_keyword(message)  # Check i chat message has a reply keyword
                 if keyword != "NOMATCH":  # Keword is a match
-                    bot_name = name.lower()
-                    bot_reply = f'{name}: {(Bot.response(bot_name, keyword))}'  # Activate bot reply with keyword
+
+                    x = name.lower()
+                    print(x)
+
+                    bot_reply = f'{name}: {(Bot.response(x, keyword))}'  # Activate bot reply with keyword
                     client.send(bot_reply.encode('utf8'))
                     print(f'Bot reply: {bot_reply}')  # Console log info
-                    time.sleep(0.5)
-
 
         except:
             logging.error("Com error!")  # If server is down disconnect ´
@@ -123,8 +125,7 @@ def user_receive():  # Funktion for receiving messages form chat server
             if message == 'NICK':  # Send nickname of client when server asks for it
                 client.send(name.encode('utf8'))
             else:
-                print(f'{message}')  # If not nick request print message
-                time.sleep(0.01) # !!!! Bufring av input uønskede mellom rom // Lage en que
+                print(message)  # If not nick request print message
         except:
             print("Com error!")  # If server is down disconnect ´
             client.close()

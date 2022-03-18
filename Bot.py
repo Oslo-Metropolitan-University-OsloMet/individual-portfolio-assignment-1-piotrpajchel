@@ -1,4 +1,5 @@
 import random
+import time
 
 
 class Bot:
@@ -28,7 +29,7 @@ def response(bot_type, a, b=None):
         alternatives = ["coding", "singing", "sleeping", "fighting"]
         b = random.choice(alternatives)
         res = f"Yea, {a} is an option. Or we could do some {b}."
-        return res, b  # Returns tuplet
+        return res  # , b  # Returns tuplet
 
     if bot_type == "chuck":
         action = a + "ing"
@@ -39,3 +40,5 @@ def response(bot_type, a, b=None):
         elif action in good_things:
             return f"What? {action} sucks. Not doing that."
         return "I don't care!"
+
+
