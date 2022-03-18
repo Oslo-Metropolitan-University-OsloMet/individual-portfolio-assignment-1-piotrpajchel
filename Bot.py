@@ -28,9 +28,9 @@ def response(bot_type, a, b=None):
         alternatives = ["coding", "singing", "sleeping", "fighting"]
         b = random.choice(alternatives)
         res = f"Yea, {a} is an option. Or we could do some {b}."
-        return res, b
+        return res, b  # Returns tuplet
 
-    if bot_type == "dora":
+    if bot_type == "chuck":
         action = a + "ing"
         bad_things = ["fighting", "bickering", "yelling", "complaining"]
         good_things = ["singing", "hugging", "playing", "working"]
