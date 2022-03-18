@@ -17,13 +17,16 @@ def bot_io():  # Funktion for reciving messages form chat server
             message = client.recv(1024).decode('utf8')
             if message == 'NICK':  # Send nickname of client when server asks for it
                 client.send(name.encode('utf8'))
-            elif f"{name}:" in message:  # If message from self ignore to avoid feedback
+            elif f"{name}:" in message: # If message from self ignore
                 pass
             else:
-                keyword = Bot.find_keyword(message)  # Check i chat message has a reply keyword
-                if keyword != "NOMATCH": # Keword is a match
-                    bot_reply = f'{name}: {(Bot.response(name, keyword))}'  # Activate bot reply with keyword
+                keyword = Bot.find_keyword(message) #Lokk for keyword in chat
+                if keyword == 'None':
+                    pass
+                else:
+                    bot_reply = f'{name}: {(Bot.response(name, keyword))}' #Reply with keyword
                     client.send(bot_reply.encode('utf8'))
+                    print(bot_reply.encode)
         except:
             print("Com error!")  # If server is down disconnect ´
             client.close()
@@ -32,3 +35,6 @@ def bot_io():  # Funktion for reciving messages form chat server
 
 bot_io_thread = threading.Thread(target=bot_io)  # A thread for receiving messages to chat server
 bot_io_thread.start()
+
+
+
