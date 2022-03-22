@@ -1,6 +1,6 @@
+import errno
 import queue
 import socket
-import sys
 import threading
 
 host = "127.0.0.1"  # Set server ip
@@ -14,30 +14,29 @@ server.listen()  # Listen for incoming connections
 clients = []  # List of active clients
 nicknames = []  # List of nicknames for active clients
 
+broadcast_queue = queue.Queue()
 
 
-
-
-def broadcast(message):  # Function for sending a message from one client to all active clients
+def m_q():
+    q_message = broadcast_queue.get()
     for client in clients:
-        client.send(message)
-
-        # if nick er i message ikke send den til avsender.
+        client.send(q_message)
 
 
 def handel(client):  # Function for handeling clients if client not available remove client from server
     while True:
         try:
             message = client.recv(1024)
-            broadcast(message)
+            # broadcast(message)
+            broadcast_queue.put(message)
         except:
             index = clients.index(client)
             clients.remove(client)
             client.close()
             nickname = nicknames[index]
-            broadcast(f'{nickname} left the chat '.encode('utf8'))
+            # broadcast(f'{nickname} left the chat '.encode('utf8'))
+            broadcast_queue.put(f'{nickname} left the chat '.encode('utf8'))
             nicknames.remove(nickname)
-            print("bowf")
             break
 
 
@@ -72,19 +71,22 @@ def receive():
         clients.append(client)
 
         print(f'Nickname of connected client is {nickname}')  # Server side system message
-        broadcast(f'{nickname} just connected'.encode('utf8'))  # Inform other chatrom users who has connected
+        # broadcast(f'{nickname} just connected'.encode('utf8'))  # Inform other chatrom users who has connected
+        broadcast_queue.put(f'{nickname} just connected'.encode('utf8'))
         client.send('Connection successful, welcome to ChatyChaty !'.encode('utf8'))  # Tell client that they are
+
         # connected to server
 
         thread = threading.Thread(target=handel, args=(client,))  # Threading to be enable to handel multiple clients
         thread.start()
 
-        print(threading.active_count())
-
 
 def main():
     print("Server started")
-    receive()  # Main method start
+    thread_m_q = threading.Thread(target=m_q)  # Threading to be enable to handel multiple clients
+    thread_m_q.start()
+    thread_receive = threading.Thread(target=receive())
+    thread_receive.start()
 
 
 if __name__ == "__main__":
