@@ -120,7 +120,7 @@ def user_receive():  # Funktion for receiving messages form chat server
                 client.send(name.encode('utf8'))
             else:
                 print(f'{message}')  # If not nick request print message
-                time.sleep(0.01)  # !!!! Bufring av input uønskede mellom rom // Replase med en fifo que
+                #time.sleep(0.01)  # !!!! Bufring av input uønskede mellom rom // Replase med en fifo que
         except:
             print("Com error!")  # If server is down disconnect ´
             client.close()
@@ -129,19 +129,15 @@ def user_receive():  # Funktion for receiving messages form chat server
 
 def user_send():  # Funkstion for sending messages to chat server
     while True:
-        try:
-            message = f'{name}: {input("")}'
-            client.send(message.encode('utf8'))
-        except:
-            print("Com error!")  # If server is down disconnect ´
-            client.close()
-            break
+        message = f'{name}: {input("")}'
+        client.send(message.encode('utf8'))
 
 
 def main():
     try:
         if mode == "user":
-            user_receive_thread = threading.Thread(target=user_receive)  # A thread for receiving messages to chat server
+            user_receive_thread = threading.Thread(
+                target=user_receive)  # A thread for receiving messages to chat server
             user_receive_thread.start()
 
             user_send_thread = threading.Thread(target=user_send())  # A thread for sending messages to chat server
@@ -153,8 +149,6 @@ def main():
 
     except:
         logging.error("Could not start client")
-        sys.exit()
-
 
 
 if __name__ == "__main__":

@@ -7,20 +7,24 @@ host = "127.0.0.1"  # Set server ip
 port = 55556  # Set server port
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # Select Internet and TCP protocol
-server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 server.bind((host, port))  # Set host ip and port
 server.listen()  # Listen for incoming connections
 
 clients = []  # List of active clients
 nicknames = []  # List of nicknames for active clients
 
+broadcast_queue = queue.Queue()
 
 
+def broadcast():  # Function for sending a message from one client to all active clients
 
+    while True:
+        message = broadcast_queue.get()
+        print(message)
 
-def broadcast(message):  # Function for sending a message from one client to all active clients
-    for client in clients:
-        client.send(message)
+        for client in clients:
+            client.send(message)
+            print(message)
 
         # if nick er i message ikke send den til avsender.
 
@@ -29,15 +33,18 @@ def handel(client):  # Function for handeling clients if client not available re
     while True:
         try:
             message = client.recv(1024)
-            broadcast(message)
+            # broadcast(message)
+            broadcast_queue.put(message)
+
         except:
             index = clients.index(client)
             clients.remove(client)
             client.close()
             nickname = nicknames[index]
-            broadcast(f'{nickname} left the chat '.encode('utf8'))
+            #broadcast(f'{nickname} left the chat '.encode('utf8'))  # que ->
+            broadcast_queue.put(message)
             nicknames.remove(nickname)
-            print("bowf")
+            print("kick")
             break
 
 
@@ -72,19 +79,20 @@ def receive():
         clients.append(client)
 
         print(f'Nickname of connected client is {nickname}')  # Server side system message
-        broadcast(f'{nickname} just connected'.encode('utf8'))  # Inform other chatrom users who has connected
+        broadcast_queue.put(f'{nickname} just connected'.encode('utf8'))
+        # broadcast(f'{nickname} just connected'.encode('utf8'))  # Inform other chatrom users who has connected
         client.send('Connection successful, welcome to ChatyChaty !'.encode('utf8'))  # Tell client that they are
         # connected to server
 
         thread = threading.Thread(target=handel, args=(client,))  # Threading to be enable to handel multiple clients
         thread.start()
 
-        print(threading.active_count())
-
 
 def main():
     print("Server started")
     receive()  # Main method start
+    thread_broadcast = threading.Thread(target=broadcast)
+    thread_broadcast.start()
 
 
 if __name__ == "__main__":

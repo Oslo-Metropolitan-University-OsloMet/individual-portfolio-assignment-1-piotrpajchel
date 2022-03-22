@@ -14,15 +14,21 @@ server.listen()  # Listen for incoming connections
 clients = []  # List of active clients
 nicknames = []  # List of nicknames for active clients
 
+broadcast_queue = queue.Queue()
 
 
+def x():
+    while True:
+        if not broadcast_queue.empty():
+            q_message = broadcast_queue.get()
+            print(q_message)
+
+            for client in clients:
+                client.send(q_message)
 
 
 def broadcast(message):  # Function for sending a message from one client to all active clients
-    for client in clients:
-        client.send(message)
-
-        # if nick er i message ikke send den til avsender.
+    broadcast_queue.put(message)
 
 
 def handel(client):  # Function for handeling clients if client not available remove client from server
@@ -37,7 +43,6 @@ def handel(client):  # Function for handeling clients if client not available re
             nickname = nicknames[index]
             broadcast(f'{nickname} left the chat '.encode('utf8'))
             nicknames.remove(nickname)
-            print("bowf")
             break
 
 
@@ -79,12 +84,14 @@ def receive():
         thread = threading.Thread(target=handel, args=(client,))  # Threading to be enable to handel multiple clients
         thread.start()
 
-        print(threading.active_count())
-
 
 def main():
     print("Server started")
-    receive()  # Main method start
+    thread_receive = threading.Thread(target=receive)
+    thread_x = threading.Thread(target=x)
+
+    thread_receive.start()
+    thread_x.start()
 
 
 if __name__ == "__main__":
