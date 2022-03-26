@@ -1,6 +1,5 @@
 import socket
 import threading
-import time
 import Bot
 import sys
 import logging
@@ -85,23 +84,30 @@ client.connect((address, port))  # Adress and port of chat server local '127.0.0
 
 # ---Bot code-------------------
 
+
 def bot_io():  # Funktion for reciving messages form chat server
     while True:
         try:
             message = client.recv(1024).decode('utf8')
             if message == 'NICK':  # Send nickname of client when server asks for it
                 client.send(name.encode('utf8'))
-                print(f'Bot: {name} connected')  # Console log info
-            elif f"{name}:" in message:  # If message from self ignore to avoid feedback
+            elif message == 'NICK_INVALID':  # If nickname is used disconnect
+                print(f'Bot: {name} Nickname already in use')
+            elif message == 'NICK_OK':  # If nickname is ok print connect message
+                print(f'Bot: {name} connected')
+            elif message == 'KICK':  # Kick message from server disconnects client
+                client.close()
+                print(f'Bot: {name} Kicked')
+            elif Bot.name_check(message):  # If message is from a bot ignore
                 pass
             else:
                 keyword = Bot.find_keyword(message)  # Check i chat message has a reply keyword
                 if keyword != "NOMATCH":  # Keword is a match
                     bot_name = name.lower()
-                    bot_reply = f'{name}: {(Bot.response(bot_name, keyword))}\n'  # Activate bot reply with keyword
+                    bot_reply = f'{name}: {(Bot.response(bot_name, keyword))}'  # Activate bot reply with keyword
                     client.send(bot_reply.encode('utf8'))
                     print(f'Bot reply: {bot_reply}')  # Console log info
-                    time.sleep(0.5)  # Limit to much respons on same topic
+
 
         except:
             logging.error("Com error!")  # If server is down disconnect ´
@@ -118,11 +124,18 @@ def user_receive():  # Funktion for receiving messages form chat server
             message = client.recv(1024).decode('utf8')
             if message == 'NICK':  # Send nickname of client when server asks for it
                 client.send(name.encode('utf8'))
+            elif message == 'NICK_INVALID':  # If nickname is used disconnect
+                client.close()
+                print(f'User: {name} nickname already in use')  # If nickname is ok print connect message
+            elif message == 'NICK_OK':
+                print(f'{name} connected')
+            elif message == 'KICK':
+                client.close()
+                print(f'User: {name} Kicked')
             else:
                 print(f'{message}')  # If not nick request print message
-                time.sleep(0.01)  # !!!! Bufring av input uønskede mellom rom // Replase med en fifo que
-        except:
-            print("Com error!")  # If server is down disconnect ´
+        except Exception as e:
+            print(f"Disconected from server!{e}")  # If server is down disconnect ´
             client.close()
             break
 
@@ -132,29 +145,23 @@ def user_send():  # Funkstion for sending messages to chat server
         try:
             message = f'{name}: {input("")}'
             client.send(message.encode('utf8'))
-        except:
-            print("Com error!")  # If server is down disconnect ´
+        except Exception as e:
+            print(f"Com error!{e.__class__}")  # If server is down disconnect ´
             client.close()
             break
 
 
 def main():
-    try:
-        if mode == "user":
-            user_receive_thread = threading.Thread(target=user_receive)  # A thread for receiving messages to chat server
-            user_receive_thread.start()
+    if mode == "user":
+        user_receive_thread = threading.Thread(target=user_receive)  # A thread for receiving messages to chat server
+        user_receive_thread.start()
 
-            user_send_thread = threading.Thread(target=user_send())  # A thread for sending messages to chat server
-            user_send_thread.start()
+        user_send_thread = threading.Thread(target=user_send())  # A thread for sending messages to chat server
+        user_send_thread.start()
 
-        if mode == "bot":
-            bot_io_thread = threading.Thread(target=bot_io)  # A thread for receiving messages to chat server
-            bot_io_thread.start()
-
-    except:
-        logging.error("Could not start client")
-        sys.exit()
-
+    if mode == "bot":
+        bot_io_thread = threading.Thread(target=bot_io)  # A thread for receiving messages to chat server
+        bot_io_thread.start()
 
 
 if __name__ == "__main__":

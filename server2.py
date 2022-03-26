@@ -64,7 +64,7 @@ def broadcast_q():  # Function for sending a message from one client to all acti
                 client.send(message)
                 time.sleep(0.001)
         except:
-            print("Server mesage")
+            print("Sender not in list")
 
             # Sending disconect message to everyone
 
@@ -75,7 +75,11 @@ def broadcast_q():  # Function for sending a message from one client to all acti
 
 
 
+
+
+
 def handel(client):  # Function for handling clients if client not available remove client from server
+
 
     while True:
 
