@@ -1,7 +1,6 @@
 import random
 
 
-
 class Bot:
 
     def __init__(self, name):
@@ -14,6 +13,15 @@ def find_keyword(string):
         if word in keywords:
             return word
     return "NOMATCH"
+
+
+def name_check(string):
+    bot_names = ["alice", "bob", "dora", "chuck"]
+    word = string.split()[0].replace(":", "")
+    if word.lower() in bot_names:
+        return True
+
+
 
 
 def response(bot_type, a, b=None):
