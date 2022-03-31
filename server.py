@@ -1,3 +1,8 @@
+# -------------------------------------------------
+# Server
+# -------------------------------------------------
+
+
 import queue
 import socket
 import threading
@@ -14,10 +19,10 @@ server.listen()  # Listen for incoming connections
 clients = []  # List of active clients
 nicknames = []  # List of nicknames for active clients
 
-broadcast_queue = queue.Queue()
+broadcast_queue = queue.Queue()  # Queue for collecting thread messages and sending them in order to clients
 
 
-def cli():
+def cli():  # A simple command line function for listing users and kikcking the form server
     while True:
 
         cli_in = input(">>")
@@ -44,7 +49,7 @@ def cli():
             print(f'{cli_in} not a valid input command ')
 
 
-def broadcast_q():  # Function for sending a message from one client to all active clients
+def broadcast_q():  # Function for sending a message from one client to other clients
 
     while True:
         message = broadcast_queue.get()
@@ -56,31 +61,26 @@ def broadcast_q():  # Function for sending a message from one client to all acti
 
             sender_index = nicknames.index(name_tag)  # Finds index of sender
 
-            # Makes sender_list that sends to every one exept sender
+            # Makes sender_list that sends to every one except sender
 
             send_list = [element for i, element in enumerate(clients) if i not in {sender_index}]
 
-            for client in send_list:
+            for client in send_list:  # Sends message to clients in list
                 client.send(message)
                 time.sleep(0.001)
         except:
-            print("Server mesage")
+            print("User disconnected ")
+            # Sending disconnect message to everyone
 
-            # Sending disconect message to everyone
-
-            for client in clients:
+            for client in clients:  # Sends message to clients in list
                 client.send(message)
                 time.sleep(0.001)
-
-
 
 
 def handel(client):  # Function for handling clients if client not available remove client from server
 
     while True:
-
         message = client.recv(1024)
-
         if message:  # if message is not zero byte and not kicked
             broadcast_queue.put(message)
         else:  # when client disconnects zero byte stream is send / Disconnect client and end stop thread
@@ -115,16 +115,16 @@ def set_keepalive(sock, after_idle_sec=1, interval_sec=3, max_fails=5):
 
 def receive():
     while True:
-        client, adress = server.accept()  # Looking for conection
+        client, adress = server.accept()  # Looking for connection
         print(f'Conected with {str(adress)}')  # Server side system message
-        set_keepalive(client)  # Keep TCP konection alive to
+        set_keepalive(client)  # Keep TCP connection alive to
         client.send('NICK'.encode('utf8'))  # Asking for nickname from client
         nickname = client.recv(1024).decode('utf8')  # Receive nickname and store nickname and client in lists
-        if nickname in nicknames:
+        if nickname in nicknames: # Error message if Nick is in use
             print(f"{nickname} already in use")
             client.send('NICK_INVALID'.encode('utf8'))
         else:
-            client.send('NICK_OK'.encode('utf8'))
+            client.send('NICK_OK'.encode('utf8')) # Nick is ok and registered
             nicknames.append(nickname)
             clients.append(client)
             print(f'Nickname of connected client is {nickname}')  # Server side system message
@@ -141,9 +141,10 @@ def receive():
 
 
 def main():
+    # Starting threads for receive(), broadcast_q () and cli()
     print("Server started")
     thread_receive = threading.Thread(target=receive)
-    thread_receive.start()  # Main method start
+    thread_receive.start()
     thread_broadcast_q = threading.Thread(target=broadcast_q)
     thread_broadcast_q.start()
     thread_cli = threading.Thread(target=cli)

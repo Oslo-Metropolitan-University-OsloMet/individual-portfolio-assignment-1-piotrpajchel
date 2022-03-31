@@ -1,3 +1,8 @@
+# -------------------------------------------------
+# Client
+# -------------------------------------------------
+
+
 import socket
 import threading
 import Bot
@@ -48,7 +53,7 @@ else:
     logging.error("Not a valid ip format, valid format: [0-255].[0-255].[0-255].[0-255] ")
     sys.exit()
 
-# Sets port number
+    # Sets port number
 port = args.Port
 
 # Check for user mode
@@ -70,6 +75,7 @@ if args.Mode == 'bot':
         name = args.Name
     else:
         logging.error("Invalid bot name, valid bot names: Alice, Bob, Dora, Chuck ")
+        sys.exit()
 
 # Sets username
 
@@ -120,6 +126,7 @@ def bot_io():  # Funktion for reciving messages form chat server
 
 def user_receive():  # Funktion for receiving messages form chat server
     while True:
+
         try:
             message = client.recv(1024).decode('utf8')
             if message == 'NICK':  # Send nickname of client when server asks for it
@@ -134,13 +141,14 @@ def user_receive():  # Funktion for receiving messages form chat server
                 print(f'User: {name} Kicked')
             else:
                 print(f'{message}')  # If not nick request print message
-        except Exception as e:
-            print(f"Disconected from server!{e}")  # If server is down disconnect ´
+
+        except:
+            print(f"Disconected from server!")  # If server is down disconnect ´
             client.close()
             break
 
 
-def user_send():  # Funkstion for sending messages to chat server
+def user_send():  # Function for sending messages to chat server
     while True:
         try:
             message = f'{name}: {input("")}'

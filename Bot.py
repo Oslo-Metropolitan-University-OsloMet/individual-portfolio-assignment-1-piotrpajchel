@@ -1,3 +1,7 @@
+# -------------------------------------------------
+# Bot object
+# -------------------------------------------------
+
 import random
 
 
@@ -7,7 +11,7 @@ class Bot:
         self.name = name
 
 
-def find_keyword(string):
+def find_keyword(string): #Checks if chat input contains trigger words
     keywords = ["work", "play", "eat", "cry", "sleep", "fight"]
     for word in string.split():
         if word in keywords:
@@ -15,16 +19,14 @@ def find_keyword(string):
     return "NOMATCH"
 
 
-def name_check(string):
+def name_check(string): #Checks if chat input is written by a bot
     bot_names = ["alice", "bob", "dora", "chuck"]
     word = string.split()[0].replace(":", "")
     if word.lower() in bot_names:
         return True
 
 
-
-
-def response(bot_type, a, b=None):
+def response(bot_type, a, b=None): # Bot types with input a and b
     if bot_type == "alice":
         return f"I think {a}ing sounds great!"
 
